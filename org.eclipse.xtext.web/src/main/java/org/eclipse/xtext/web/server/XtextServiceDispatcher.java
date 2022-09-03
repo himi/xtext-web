@@ -164,8 +164,8 @@ public class XtextServiceDispatcher {
 	@Inject
 	private UpdateDocumentService updateDocumentService;
 
-	@Inject
-	private ContentAssistService contentAssistService;
+	@Inject(optional=true)
+	private ContentAssistService contentAssistService = null;
 
 	@Inject
 	private ValidationService validationService;
@@ -173,8 +173,8 @@ public class XtextServiceDispatcher {
 	@Inject
 	private HighlightingService highlightingService;
 
-	@Inject
-	private HoverService hoverService;
+	@Inject(optional=true)
+	private HoverService hoverService = null;
 
 	@Inject
 	private OccurrencesService occurrencesService;
@@ -394,6 +394,9 @@ public class XtextServiceDispatcher {
 	}
 
 	protected ServiceDescriptor getContentAssistService(IServiceContext context) throws InvalidRequestException {
+        if (contentAssistService == null) {
+			throw new InvalidRequestException("Content Assist Service is not available");
+        }
 		int offset = getInt(context, "caretOffset", Optional.of(0));
 		if (offset < 0) {
 			throw new InvalidRequestException.InvalidParametersException(
@@ -463,6 +466,9 @@ public class XtextServiceDispatcher {
 	}
 
 	protected ServiceDescriptor getHoverService(IServiceContext context) throws InvalidRequestException {
+        if (hoverService == null) {
+			throw new InvalidRequestException("Hover Service is not available");
+        }
 		XtextWebDocumentAccess document = getDocumentAccess(context);
 		int offset = getInt(context, "caretOffset", Optional.of(0));
 		if (offset < 0) {
