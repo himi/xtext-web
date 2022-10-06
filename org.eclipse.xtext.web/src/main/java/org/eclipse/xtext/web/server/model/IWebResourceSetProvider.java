@@ -11,6 +11,8 @@ package org.eclipse.xtext.web.server.model;
 import com.google.inject.ImplementedBy;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.web.server.IServiceContext;
 
@@ -38,4 +40,11 @@ public interface IWebResourceSetProvider {
    * context should be avoided in this case.
    */
   ResourceSet get(String resourceId, IServiceContext serviceContext);
+  
+  
+  /**
+   * It is called when the index of {@param resource} should be updated.
+   * @param resource
+   */
+  default void updateIndex(Resource resource) { }
 }

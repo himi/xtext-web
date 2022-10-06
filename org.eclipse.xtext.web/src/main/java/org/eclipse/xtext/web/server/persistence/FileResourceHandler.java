@@ -51,6 +51,7 @@ public class FileResourceHandler implements IServerResourceHandler {
 			}
 			ResourceSet resourceSet = resourceSetProvider.get(resourceId, serviceContext);
 			XtextResource resource = (XtextResource) resourceSet.getResource(uri, true);
+			resourceSetProvider.updateIndex(resource);
 			XtextWebDocument document = documentProvider.get(resourceId, serviceContext);
 			document.setInput(resource);
 			return document;
@@ -63,10 +64,12 @@ public class FileResourceHandler implements IServerResourceHandler {
 	public void put(IXtextWebDocument document, IServiceContext serviceContext) throws IOException {
 		try {
 			URI uri = resourceBaseProvider.getFileURI(document.getResourceId());
+			XtextResource xres = document.getResource();
 			try (OutputStreamWriter writer = new OutputStreamWriter(
-					document.getResource().getResourceSet().getURIConverter().createOutputStream(uri),
+					xres.getResourceSet().getURIConverter().createOutputStream(uri),
 					encodingProvider.getEncoding(uri))) {
 				writer.write(document.getText());
+				resourceSetProvider.updateIndex(xres);
 			} catch (WrappedException exception) {
 				throw exception.getCause();
 			}

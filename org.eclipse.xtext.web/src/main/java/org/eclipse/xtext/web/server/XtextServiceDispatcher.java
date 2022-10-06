@@ -48,6 +48,7 @@ import org.eclipse.xtext.web.server.persistence.IServerResourceHandler;
 import org.eclipse.xtext.web.server.persistence.ResourcePersistenceService;
 import org.eclipse.xtext.web.server.syntaxcoloring.HighlightingService;
 import org.eclipse.xtext.web.server.validation.ValidationService;
+import org.eclipse.xtext.web.server.viz.VizService;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function0;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
@@ -176,6 +177,9 @@ public class XtextServiceDispatcher {
 	@Inject(optional=true)
 	private HoverService hoverService = null;
 
+	@Inject(optional=true)
+	private VizService vizService = null;
+
 	@Inject
 	private OccurrencesService occurrencesService;
 
@@ -205,6 +209,9 @@ public class XtextServiceDispatcher {
 
 	@Inject
 	private XtextWebDocumentAccess.Factory documentAccessFactory;
+
+    @Inject(optional=true)
+    private List<IServiceProvider> serviceProviders;
 
 	private final Random randomGenerator = new Random();
 
@@ -285,6 +292,8 @@ public class XtextServiceDispatcher {
 				return getFormattingService(context);
 			case "generate":
 				return getGeneratorService(context);
+			case "viz":
+				return getVizService(context);
 			default:
 				throw new InvalidRequestException.InvalidParametersException(
 						"The service type '" + serviceType + "' is not supported.");
@@ -596,6 +605,27 @@ public class XtextServiceDispatcher {
 		return serviceDescriptor;
 	}
 
+	protected ServiceDescriptor getVizService(IServiceContext context) throws InvalidRequestException {
+        if (vizService == null) {
+			throw new InvalidRequestException("Visualization Service is not available");
+        }
+		final int offset = getInt(context, "caretOffset", Optional.of(1));
+        if (offset < 1) {
+			throw new InvalidRequestException.InvalidParametersException(
+					"The parameter 'offset' must not be negative.");
+        }
+		XtextWebDocumentAccess document = getDocumentAccess(context);
+		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
+        serviceDescriptor.service = () -> {
+            try {
+                return vizService.getResult(document, offset);
+            } catch (Throwable throwable) {
+                return handleError(serviceDescriptor, throwable);
+            }
+        };
+        return serviceDescriptor;
+    }
+
 	/**
 	 * Retrieve the document access for the given service context. If the 'fullText'
 	 * parameter is given, a new document containing that text is created. Otherwise
@@ -650,6 +680,7 @@ public class XtextServiceDispatcher {
 				resourceSet.getResources().remove(existingResource);
 			}
 			resourceSet.getResources().add(resource);
+			resourceSetProvider.updateIndex(resource);
 			resource.load(new StringInputStream(fullText), Collections.emptyMap());
 			XtextWebDocument document = documentProvider.get(resourceId, context);
 			document.setInput(resource);
