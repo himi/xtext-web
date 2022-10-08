@@ -23,9 +23,6 @@ public class VizService {
 	@Inject
 	private EObjectAtOffsetHelper eObjectAtOffsetHelper;
 
-    /*	@Inject
-        private ElementAtOffsetUtil elementAtOffsetUtil; */
-
 	private EObject getElementAt(XtextResource resource, int offset) {
 		EObject crossLinkedEObject = eObjectAtOffsetHelper.resolveCrossReferencedElementAt(resource, offset);
 		if (crossLinkedEObject != null) {

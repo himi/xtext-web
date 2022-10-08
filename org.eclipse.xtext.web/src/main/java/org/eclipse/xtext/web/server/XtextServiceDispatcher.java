@@ -44,6 +44,7 @@ import org.eclipse.xtext.web.server.model.UpdateDocumentService;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 import org.eclipse.xtext.web.server.model.XtextWebDocumentAccess;
 import org.eclipse.xtext.web.server.occurrences.OccurrencesService;
+import org.eclipse.xtext.web.server.outline.OutlineService;
 import org.eclipse.xtext.web.server.persistence.IServerResourceHandler;
 import org.eclipse.xtext.web.server.persistence.ResourcePersistenceService;
 import org.eclipse.xtext.web.server.syntaxcoloring.HighlightingService;
@@ -180,6 +181,9 @@ public class XtextServiceDispatcher {
 	@Inject(optional=true)
 	private VizService vizService = null;
 
+	@Inject(optional=true)
+	private OutlineService outlineService = null;
+
 	@Inject
 	private OccurrencesService occurrencesService;
 
@@ -210,8 +214,8 @@ public class XtextServiceDispatcher {
 	@Inject
 	private XtextWebDocumentAccess.Factory documentAccessFactory;
 
-    @Inject(optional=true)
-    private List<IServiceProvider> serviceProviders;
+    //@Inject(optional=true)
+    //private List<IServiceProvider> serviceProviders;
 
 	private final Random randomGenerator = new Random();
 
@@ -294,6 +298,8 @@ public class XtextServiceDispatcher {
 				return getGeneratorService(context);
 			case "viz":
 				return getVizService(context);
+			case "outline":
+				return getOutlineService(context);
 			default:
 				throw new InvalidRequestException.InvalidParametersException(
 						"The service type '" + serviceType + "' is not supported.");
@@ -619,6 +625,27 @@ public class XtextServiceDispatcher {
         serviceDescriptor.service = () -> {
             try {
                 return vizService.getResult(document, offset);
+            } catch (Throwable throwable) {
+                return handleError(serviceDescriptor, throwable);
+            }
+        };
+        return serviceDescriptor;
+    }
+
+	protected ServiceDescriptor getOutlineService(IServiceContext context) throws InvalidRequestException {
+        if (outlineService == null) {
+			throw new InvalidRequestException("Outline Service is not available");
+        }
+		final int offset = getInt(context, "caretOffset", Optional.of(1));
+        if (offset < 1) {
+			throw new InvalidRequestException.InvalidParametersException(
+					"The parameter 'offset' must not be negative.");
+        }
+		XtextWebDocumentAccess document = getDocumentAccess(context);
+		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
+        serviceDescriptor.service = () -> {
+            try {
+                return outlineService.getResult(document, offset);
             } catch (Throwable throwable) {
                 return handleError(serviceDescriptor, throwable);
             }
