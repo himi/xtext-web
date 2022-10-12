@@ -36,4 +36,8 @@ public class OutlineResult implements IServiceResult {
     OutlineResult(OutlineElement[] result) {
         this.result = result;
     }
+
+    static OutlineResult emptyResult() {
+        return new OutlineResult(new OutlineElement[0]);
+    }
 }

@@ -7,6 +7,10 @@
 
 package org.eclipse.xtext.web.server.outline;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
@@ -31,6 +35,7 @@ public class OutlineService {
         return leaf;
     }
 
+
 	@Inject
 	private IOutliner outliner;
 
@@ -38,8 +43,21 @@ public class OutlineService {
 		return document.readOnly(new CancelableUnitOfWork<OutlineResult, IXtextWebDocument>() {
 			@Override
 			public OutlineResult exec(IXtextWebDocument it, CancelIndicator cancelIndicator) throws Exception {
-				INode node = getNodeAt(it.getResource(), offset);
-                OutlineElement[] result = outliner.toOutline(node);
+                List<INode> nodes = new ArrayList<>();
+                XtextResource xres = it.getResource();
+                if (offset >= 0) {
+                    INode node = getNodeAt(xres, offset);
+                    if (node == null) return OutlineResult.emptyResult();
+                    nodes.add(node);
+                } else {
+                    for (EObject eObj : xres.getContents()) {
+                        INode node = NodeModelUtils.findActualNodeFor(eObj);
+                        if (node != null) {
+                            nodes.add(node);
+                        }
+                    }
+                }
+                OutlineElement[] result = outliner.toOutline(nodes);
 				return new OutlineResult(result);
 			}
 		});

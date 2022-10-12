@@ -7,8 +7,10 @@
 
 package org.eclipse.xtext.web.server.outline;
 
+import java.util.List;
+
 import org.eclipse.xtext.nodemodel.INode;
 
 public interface IOutliner {
-   OutlineElement[] toOutline(INode node);
+   OutlineElement[] toOutline(List<INode> nodes);
 }

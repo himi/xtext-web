@@ -636,11 +636,7 @@ public class XtextServiceDispatcher {
         if (outlineService == null) {
 			throw new InvalidRequestException("Outline Service is not available");
         }
-		final int offset = getInt(context, "caretOffset", Optional.of(1));
-        if (offset < 1) {
-			throw new InvalidRequestException.InvalidParametersException(
-					"The parameter 'offset' must not be negative.");
-        }
+		final int offset = getInt(context, "caretOffset", Optional.of(-1));
 		XtextWebDocumentAccess document = getDocumentAccess(context);
 		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
         serviceDescriptor.service = () -> {
