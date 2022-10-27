@@ -620,11 +620,14 @@ public class XtextServiceDispatcher {
 			throw new InvalidRequestException.InvalidParametersException(
 					"The parameter 'offset' must not be negative.");
         }
+        final String view = getString(context, "view", Optional.of("DEFAULT"));
+        final String styles = getString(context, "styles", Optional.of(""));
+
 		XtextWebDocumentAccess document = getDocumentAccess(context);
 		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
         serviceDescriptor.service = () -> {
             try {
-                return vizService.getResult(document, offset);
+                return vizService.getResult(document, offset, view, styles);
             } catch (Throwable throwable) {
                 return handleError(serviceDescriptor, throwable);
             }

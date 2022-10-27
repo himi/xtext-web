@@ -10,5 +10,5 @@ package org.eclipse.xtext.web.server.viz;
 import org.eclipse.emf.ecore.EObject;
 
 public interface IVisualizer {
-    String toSVG(EObject eObj);
+    String toSVG(EObject eObj, String view, String styles);
 }
