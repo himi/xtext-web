@@ -9,6 +9,8 @@ package org.eclipse.xtext.web.server.outline;
 
 import java.text.MessageFormat;
 
+import com.google.common.xml.XmlEscapers;
+
 public class OutlineElement {
 
     /* jsTree JSON format:
@@ -98,11 +100,12 @@ public class OutlineElement {
                           Integer start, Integer end,
                           Integer line, Integer offset, Integer length,
                           OutlineElement[] children) {
-        this.text = mf.format(new Object[] {
+        String text = mf.format(new Object[] {
             str(label), str(className),
             str(labelPre), str(classNamePre),
             str(labelPost), str(classNamePost)
         });
+        this.text = XmlEscapers.xmlContentEscaper().escape(text);
 
         this.id = href;
 
