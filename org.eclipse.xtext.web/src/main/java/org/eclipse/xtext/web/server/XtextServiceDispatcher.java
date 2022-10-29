@@ -275,9 +275,11 @@ public class XtextServiceDispatcher {
 		if (serviceType != null) {
 			switch (serviceType) {
 			case "load":
-				return getLoadResourceService(false, context);
+				return getLoadResourceService(LoadOption.LOAD, context);
+			case "reload":
+				return getLoadResourceService(LoadOption.RELOAD, context);
 			case "revert":
-				return getLoadResourceService(true, context);
+				return getLoadResourceService(LoadOption.REVERT, context);
 			case "save":
 				return getSaveResourceService(context);
 			case "update":
@@ -310,7 +312,13 @@ public class XtextServiceDispatcher {
 		}
 	}
 
-	protected ServiceDescriptor getLoadResourceService(boolean revert, IServiceContext context)
+    enum LoadOption {
+        LOAD,
+        RELOAD,
+        REVERT,
+    }
+
+	protected ServiceDescriptor getLoadResourceService(LoadOption loadOption, IServiceContext context)
 			throws InvalidRequestException {
 		String resourceId = getResourceID(context);
 		if (resourceId == null) {
@@ -319,16 +327,19 @@ public class XtextServiceDispatcher {
 		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
 		serviceDescriptor.service = () -> {
 			try {
-				if (revert) {
-					return resourcePersistenceService.revert(resourceId, resourceHandler, context);
-				} else {
+                switch (loadOption) {
+                    case LOAD:
 					return resourcePersistenceService.load(resourceId, resourceHandler, context);
-				}
+                    case RELOAD:
+					return resourcePersistenceService.reload(resourceId, resourceHandler, context);
+                    default:
+					return resourcePersistenceService.revert(resourceId, resourceHandler, context);
+                }
 			} catch (Throwable throwable) {
 				return handleError(serviceDescriptor, throwable);
 			}
 		};
-		serviceDescriptor.hasSideEffects = revert;
+		serviceDescriptor.hasSideEffects = loadOption != LoadOption.LOAD;
 		return serviceDescriptor;
 	}
 

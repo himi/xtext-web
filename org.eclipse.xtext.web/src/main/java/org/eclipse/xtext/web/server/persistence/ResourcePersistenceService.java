@@ -9,7 +9,10 @@
 package org.eclipse.xtext.web.server.persistence;
 
 import java.io.IOException;
+import java.util.Map;
 
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.concurrent.CancelableUnitOfWork;
 import org.eclipse.xtext.web.server.IServiceContext;
@@ -56,6 +59,24 @@ public class ResourcePersistenceService {
 					}
 				});
 	}
+
+	public ResourceContentResult reload(String resourceId, IServerResourceHandler resourceHandler,
+                                        IServiceContext serviceContext) throws InvalidRequestException {
+		try {
+			XtextWebDocument document = resourceHandler.get(resourceId, serviceContext);
+            XtextResource resource = document.getResource();
+            ResourceSet rset = resource.getResourceSet();
+            Map<Object, Object> options = rset.getLoadOptions();
+            resource.unload();
+            resource.load(options);
+            String text = document.setInput(resource);
+            serviceContext.getSession().put(Pair.of(XtextWebDocument.class, resourceId), document);
+            document.setDirty(false);
+            return new ResourceContentResult(text, document.getStateId(), false);
+		} catch (IOException ioe) {
+			throw new InvalidRequestException.ResourceNotFoundException("The requested resource was not found.", ioe);
+		}
+    }
 
 	/**
 	 * Revert the content of a document to the last saved state.
