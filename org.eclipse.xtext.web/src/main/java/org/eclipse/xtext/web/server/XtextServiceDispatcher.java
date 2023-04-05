@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -36,6 +37,7 @@ import org.eclipse.xtext.web.server.contentassist.ContentAssistService;
 import org.eclipse.xtext.web.server.formatting.FormattingService;
 import org.eclipse.xtext.web.server.generator.GeneratorService;
 import org.eclipse.xtext.web.server.hover.HoverService;
+import org.eclipse.xtext.web.server.mg.MgService;
 import org.eclipse.xtext.web.server.model.IWebDocumentProvider;
 import org.eclipse.xtext.web.server.model.IWebResourceSetProvider;
 import org.eclipse.xtext.web.server.model.IXtextWebDocument;
@@ -184,6 +186,9 @@ public class XtextServiceDispatcher {
 	@Inject(optional=true)
 	private OutlineService outlineService = null;
 
+	@Inject(optional=true)
+	private MgService mgService = null;
+
 	@Inject
 	private OccurrencesService occurrencesService;
 
@@ -302,6 +307,8 @@ public class XtextServiceDispatcher {
 				return getVizService(context);
 			case "outline":
 				return getOutlineService(context);
+            case "mg":
+				return getMgService(context);
 			default:
 				throw new InvalidRequestException.InvalidParametersException(
 						"The service type '" + serviceType + "' is not supported.");
@@ -656,6 +663,24 @@ public class XtextServiceDispatcher {
         serviceDescriptor.service = () -> {
             try {
                 return outlineService.getResult(document, offset);
+            } catch (Throwable throwable) {
+                return handleError(serviceDescriptor, throwable);
+            }
+        };
+        return serviceDescriptor;
+    }
+
+	protected ServiceDescriptor getMgService(IServiceContext context) throws InvalidRequestException {
+        if (mgService == null) {
+			throw new InvalidRequestException("Mg Service is not available");
+        }
+
+        Map<String, String> args = mgService.getArg(context);
+		XtextWebDocumentAccess document = getDocumentAccess(context);
+		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
+        serviceDescriptor.service = () -> {
+            try {
+                return mgService.getResult(document, args);
             } catch (Throwable throwable) {
                 return handleError(serviceDescriptor, throwable);
             }
