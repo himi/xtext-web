@@ -10,5 +10,5 @@ package org.eclipse.xtext.web.server.mg;
 import java.util.Map;
 
 public interface IMg {
-    Object invoke(Map<String, String> args);
+    Object invoke(Map<String, Object> args);
 }

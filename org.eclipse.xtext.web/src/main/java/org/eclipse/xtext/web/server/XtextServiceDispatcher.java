@@ -675,7 +675,7 @@ public class XtextServiceDispatcher {
 			throw new InvalidRequestException("Mg Service is not available");
         }
 
-        Map<String, String> args = mgService.getArg(context);
+        Map<String, Object> args = mgService.getArg(context);
 		XtextWebDocumentAccess document = getDocumentAccess(context);
 		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
         serviceDescriptor.service = () -> {
