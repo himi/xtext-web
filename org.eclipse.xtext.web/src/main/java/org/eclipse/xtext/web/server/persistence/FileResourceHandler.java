@@ -22,6 +22,8 @@ import org.eclipse.xtext.web.server.model.IWebResourceSetProvider;
 import org.eclipse.xtext.web.server.model.IXtextWebDocument;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 import org.eclipse.xtext.xbase.lib.Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
@@ -30,6 +32,8 @@ import com.google.inject.Inject;
  * implementation of {@link IResourceBaseProvider}.
  */
 public class FileResourceHandler implements IServerResourceHandler {
+    private static Logger LOG = LoggerFactory.getLogger(FileResourceHandler.class);
+
 	@Inject
 	private IResourceBaseProvider resourceBaseProvider;
 
@@ -68,7 +72,9 @@ public class FileResourceHandler implements IServerResourceHandler {
 			try (OutputStreamWriter writer = new OutputStreamWriter(
 					xres.getResourceSet().getURIConverter().createOutputStream(uri),
 					encodingProvider.getEncoding(uri))) {
+                LOG.info("Save to {}...", uri.toString());
 				writer.write(document.getText());
+                LOG.info("Done");
 				resourceSetProvider.updateIndex(xres);
 			} catch (WrappedException exception) {
 				throw exception.getCause();
