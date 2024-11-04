@@ -8,13 +8,12 @@
  */
 package org.eclipse.xtext.web.server.model;
 
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.web.server.IServiceContext;
+
 import com.google.inject.ImplementedBy;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.xtext.web.server.IServiceContext;
 
 /**
  * Provider for resource set instances.
@@ -46,5 +45,5 @@ public interface IWebResourceSetProvider {
    * It is called when the index of {@param resource} should be updated.
    * @param resource
    */
-  default void updateIndex(Resource resource) { }
+  default void updateIndex(XtextWebDocument document) { }
 }

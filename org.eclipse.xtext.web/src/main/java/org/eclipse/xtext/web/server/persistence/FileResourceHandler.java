@@ -55,9 +55,9 @@ public class FileResourceHandler implements IServerResourceHandler {
 			}
 			ResourceSet resourceSet = resourceSetProvider.get(resourceId, serviceContext);
 			XtextResource resource = (XtextResource) resourceSet.getResource(uri, true);
-			resourceSetProvider.updateIndex(resource);
 			XtextWebDocument document = documentProvider.get(resourceId, serviceContext);
 			document.setInput(resource);
+			resourceSetProvider.updateIndex(document);
 			return document;
 		} catch (WrappedException exception) {
 			throw Exceptions.sneakyThrow(exception.getCause());
@@ -75,7 +75,6 @@ public class FileResourceHandler implements IServerResourceHandler {
                 LOG.info("Save to {}...", uri.toString());
 				writer.write(document.getText());
                 LOG.info("Done");
-				resourceSetProvider.updateIndex(xres);
 			} catch (WrappedException exception) {
 				throw exception.getCause();
 			}

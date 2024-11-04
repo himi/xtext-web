@@ -678,9 +678,22 @@ public class XtextServiceDispatcher {
         Map<String, Object> args = mgService.getArg(context);
 		XtextWebDocumentAccess document = getDocumentAccess(context);
 		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
+
+        final Object action = args.get("action");
+
         serviceDescriptor.service = () -> {
             try {
-                return mgService.getResult(document, args);
+                if ("doc".equals(action)) {
+                    return mgService.getDocument(document, args);
+                } else if ("change".equals(action)) {
+                    return mgService.change(document, args);
+                } else if ("reload".equals(action)) {
+                    return mgService.reloadDocument(document, args);
+                } else if ("save".equals(action)) {
+                    return mgService.saveDocument(document, args);
+                } else {
+                    return mgService.getResult(document, args);
+                }
             } catch (Throwable throwable) {
                 return handleError(serviceDescriptor, throwable);
             }
@@ -742,10 +755,11 @@ public class XtextServiceDispatcher {
 				resourceSet.getResources().remove(existingResource);
 			}
 			resourceSet.getResources().add(resource);
-			resourceSetProvider.updateIndex(resource);
+
 			resource.load(new StringInputStream(fullText), Collections.emptyMap());
 			XtextWebDocument document = documentProvider.get(resourceId, context);
 			document.setInput(resource);
+			resourceSetProvider.updateIndex(document);
 			if (resourceId != null) {
 				context.getSession().put(Pair.of(XtextWebDocument.class, resourceId), document);
 			}

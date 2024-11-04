@@ -9,6 +9,9 @@ package org.eclipse.xtext.web.server.mg;
 
 import java.util.Map;
 
+import org.eclipse.xtext.web.server.model.IXtextWebDocument;
+
 public interface IMg {
+    String applyChanges(IXtextWebDocument doc, String json);
     Object invoke(Map<String, Object> args);
 }

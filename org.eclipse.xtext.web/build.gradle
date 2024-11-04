@@ -10,6 +10,7 @@ description = 'API for integrating Xtext editors in web pages.'
 dependencies {
 	api "org.eclipse.xtext:org.eclipse.xtext.ide:$versions.xtext"
 	api "org.eclipse.xtext:org.eclipse.xtext.common.types:$versions.xtext"
+        api group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
 	testImplementation 'junit:junit'
 	testImplementation "org.eclipse.xtext:org.eclipse.xtext.testing:$versions.xtext"
 	testImplementation project(':org.eclipse.xtext.web.example.statemachine.ide')
