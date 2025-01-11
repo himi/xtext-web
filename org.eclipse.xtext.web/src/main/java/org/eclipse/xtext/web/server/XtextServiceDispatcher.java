@@ -11,6 +11,7 @@ package org.eclipse.xtext.web.server;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -774,8 +775,21 @@ public class XtextServiceDispatcher {
 	 * the {@link IServerResourceHandler} to provide it. In case that resource
 	 * handler fails to provide the document, {@code null} is returned instead.
 	 */
-	protected XtextWebDocument getResourceDocument(String resourceId, IServiceContext context) {
+
+    private Map<String, XtextWebDocument> resourceDocumentMap = new HashMap<>();
+
+	protected synchronized XtextWebDocument getResourceDocument(String resourceId, IServiceContext context) {
 		try {
+            /* We must not allow different XtextWebDocuments to the same resource
+               even they belong to different seesions because ConcurrrentAccesssModificationException/
+               NullPointerException may occur due to implicit inference */
+            XtextWebDocument doc = resourceDocumentMap.get(resourceId);
+            if (doc != null) return doc;
+            doc = resourceHandler.get(resourceId, context);
+            if (doc == null) return null;
+            resourceDocumentMap.put(resourceId, doc);
+            return doc;
+            /*
 			return context.getSession().get(Pair.of(XtextWebDocument.class, resourceId), () -> {
 				try {
 					return resourceHandler.get(resourceId, context);
@@ -783,6 +797,7 @@ public class XtextServiceDispatcher {
 					throw Exceptions.sneakyThrow(t);
 				}
 			});
+            */
 		} catch (Throwable t) {
 			if (t instanceof IOException) {
 				return null;
