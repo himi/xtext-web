@@ -116,4 +116,19 @@ public class OutlineElement {
         this.length = length;
         this.children = children;
     }
+
+    public OutlineElement(String text, String id,
+                          Integer start, Integer end,
+                          Integer line, Integer offset, Integer length,
+                          OutlineElement[] children) {
+        this.text = XmlEscapers.xmlContentEscaper().escape(text);
+        this.id = id;
+
+        this.start = start;
+        this.end = end;
+        this.line = line;
+        this.offset = offset;
+        this.length = length;
+        this.children = children;
+    }
 }
