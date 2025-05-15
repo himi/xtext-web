@@ -681,6 +681,9 @@ public class XtextServiceDispatcher {
 		ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
 
         final Object action = args.get("action");
+        if (!"doc".equals(action)) {
+            serviceDescriptor.setHasSideEffects(true);
+        }
 
         serviceDescriptor.service = () -> {
             try {
