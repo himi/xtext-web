@@ -197,10 +197,15 @@ public class XtextWebDocumentAccess {
 			} else {
 				documentAccess = createReadAccess(document);
 			}
-			boolean currentThreadOwnsLock = true;
+			//boolean currentThreadOwnsLock = true;
 			T result = null;
 			try {
-				synchronizer.acquireLock(priority);
+                if (modify) {
+                    synchronizer.acquireWrite(priority);
+                } else {
+                    synchronizer.acquireRead(priority);
+                }
+
 				checkStateId();
 				synchronousWork.setCancelIndicator(synchronizer);
 				result = synchronousWork.exec(documentAccess);
@@ -224,11 +229,15 @@ public class XtextWebDocumentAccess {
 									LOG.error("Error during background work.", throwable);
 								}
 							} finally {
-								synchronizer.releaseLock();
+                                if (modify) {
+                                    synchronizer.releaseWrite();
+                                } else {
+                                    synchronizer.releaseRead();
+                                }
 							}
 						}
 					});
-					currentThreadOwnsLock = false;
+					//currentThreadOwnsLock = false;
 					executorService2.submit(new Runnable() {
 						public void run() {
 							try {
@@ -252,9 +261,8 @@ public class XtextWebDocumentAccess {
 			} catch (RejectedExecutionException ree) {
 				XtextWebDocumentAccess.LOG.error("Failed to start background work.", ree);
 			} finally {
-				if (currentThreadOwnsLock) {
-					synchronizer.releaseLock();
-				}
+                // Maybe reconsider
+                synchronizer.forceReleaseLocks();
 			}
 			return result;
 		} catch (Exception e) {
