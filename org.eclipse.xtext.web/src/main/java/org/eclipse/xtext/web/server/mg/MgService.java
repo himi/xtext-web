@@ -25,12 +25,16 @@ import org.eclipse.xtext.web.server.model.IXtextWebDocument;
 import org.eclipse.xtext.web.server.model.XtextWebDocument;
 import org.eclipse.xtext.web.server.model.XtextWebDocumentAccess;
 import org.eclipse.xtext.web.server.persistence.IResourceBaseProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
 public class MgService {
+	private static final Logger LOG = LoggerFactory.getLogger(MgService.class);
+
 	@Inject
 	private EObjectAtOffsetHelper eObjectAtOffsetHelper;
 
@@ -87,6 +91,9 @@ public class MgService {
 		return document.readOnly(new CancelableUnitOfWork<MgResult, IXtextWebDocument>() {
 			@Override
 			public MgResult exec(IXtextWebDocument doc, CancelIndicator cancelIndicator) throws Exception {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("getDocument()- text: {}, version: {}, dirty: {}", doc.getText(), getVersion(doc), doc.isDirty());
+                }
                 return MgResult.obj("text", doc.getText(),
                                     "version", getVersion(doc),
                                     "dirty", doc.isDirty());
@@ -109,6 +116,9 @@ public class MgService {
                 String text = doc.setInput(resource);
                 resourceSetProvider.updateIndex(doc);
                 doc.setDirty(false);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("reloadDocument()- text: {}, version: {}, dirty: {}", doc.getText(), getVersion(doc), doc.isDirty());
+                }
                 return MgResult.obj("text", text,
                                     "version", getVersion(doc),
                                     "dirty", false);
@@ -144,6 +154,21 @@ public class MgService {
         }
         final String json = (String) changeSet;
 		return document.modify(new CancelableUnitOfWork<MgResult, IXtextWebDocument>() {
+			@Override
+			public MgResult exec(IXtextWebDocument doc, CancelIndicator cancelIndicator) throws Exception {
+                String ret = iMg.applyChanges(doc, json);
+                return new MgResult(ret);
+			}
+		});
+    }
+
+	public MgResult pull(XtextWebDocumentAccess document, Map<String, Object> args) {
+        Object changeSet = args.get("changeSet");
+        if (!(changeSet instanceof String)) {
+            return MgResult.error("Invalid ChangeSet:" + changeSet);
+        }
+        final String json = (String) changeSet;
+		return document.readOnly(new CancelableUnitOfWork<MgResult, IXtextWebDocument>() {
 			@Override
 			public MgResult exec(IXtextWebDocument doc, CancelIndicator cancelIndicator) throws Exception {
                 String ret = iMg.applyChanges(doc, json);

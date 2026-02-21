@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.util.CancelIndicator;
+import org.eclipse.xtext.util.concurrent.CancelableUnitOfWork;
 import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
@@ -47,6 +48,16 @@ public class ValidationService extends AbstractCachedService<ValidationResult> {
 		});
 		return result;
 	}
+
+    public ValidationResult doValidation(XtextWebDocumentAccess document) {
+        // SysMLv2 validation requires "modify" operation.
+		return document.modify(new CancelableUnitOfWork<ValidationResult, IXtextWebDocument>() {
+			@Override
+            public ValidationResult exec(IXtextWebDocument idoc, CancelIndicator cancelIndicator) throws Exception {
+                return compute(idoc, cancelIndicator);
+            }
+        });
+    }
 
 	protected String translate(Severity severity) {
 		if (severity != null) {

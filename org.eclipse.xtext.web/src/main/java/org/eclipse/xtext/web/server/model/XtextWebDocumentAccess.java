@@ -219,7 +219,7 @@ public class XtextWebDocumentAccess {
 									asynchronousWork.setCancelIndicator(synchronizer);
 									asynchronousWork.exec(documentAccess);
 								}
-								EcoreUtil2.resolveLazyCrossReferences(documentAccess.getResource(), synchronizer);
+								//EcoreUtil2.resolveLazyCrossReferences(documentAccess.getResource(), synchronizer);
 							} catch (VirtualMachineError error) {
 								throw error;
 							} catch (Throwable throwable) {

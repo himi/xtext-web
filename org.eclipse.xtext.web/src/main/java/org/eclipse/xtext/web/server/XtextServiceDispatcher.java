@@ -228,7 +228,8 @@ public class XtextServiceDispatcher {
 	@Inject
 	protected void registerPreComputedServices(PrecomputedServiceRegistry registry) {
 		registry.addPrecomputedService(highlightingService);
-		registry.addPrecomputedService(validationService);
+        // Validation Service requires modification (transformation) in SysMLv2
+		// registry.addPrecomputedService(validationService);
 	}
 
 	/**
@@ -689,6 +690,8 @@ public class XtextServiceDispatcher {
             try {
                 if ("doc".equals(action)) {
                     return mgService.getDocument(document, args);
+                } else if ("pull".equals(action)) {
+                    return mgService.pull(document, args);
                 } else if ("change".equals(action)) {
                     return mgService.change(document, args);
                 } else if ("reload".equals(action)) {
